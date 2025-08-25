@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress,
 } from "@mui/material";
 import { Icon } from "@iconify/react";
 import axios from "../../utils/axios";
@@ -60,6 +61,8 @@ export default function UserDashboard() {
   const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
   const [userRating, setUserRating] = useState(0);
+
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchStores = async () => {
     setLoading(true);
@@ -102,6 +105,8 @@ export default function UserDashboard() {
 
   const handleSubmitRating = async () => {
     try {
+      setSubmitting(true);
+
       const { data } = await axios.post(
         `/user/rate-store/${selectedStore.id}`,
         { rating: userRating }
@@ -118,6 +123,8 @@ export default function UserDashboard() {
     } catch (err) {
       handleCloseDialog();
       Swal.fire("Error", "Failed to submit rating", "error");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -377,14 +384,18 @@ export default function UserDashboard() {
           <Button
             onClick={handleSubmitRating}
             variant="contained"
-            disabled={userRating === 0}
+            disabled={userRating === 0 || submitting}
             sx={{
               px: 3,
               background: gradientBg,
               "&:hover": { opacity: 0.9, background: gradientBg },
             }}
           >
-            Submit
+            {submitting ? (
+              <CircularProgress size={22} sx={{ color: "white" }} />
+            ) : (
+              "Submit"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
